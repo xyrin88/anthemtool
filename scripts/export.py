@@ -42,6 +42,12 @@ class Exporter:
             'oodle': OodleDecompressor(config.OODLE_PATH),
         })
 
+        # Export paths
+        self.path_ebx = os.path.join('bundle', 'ebx')
+        self.path_resources = os.path.join('bundle', 'res')
+        self.path_chunks = os.path.join('bundle', 'chunks')
+        self.path_toc_resources = 'chunks'
+
     def export(self) -> None:
         """
         Export the game files.
@@ -78,19 +84,21 @@ class Exporter:
 
                 if config.EXPORT_EBX:
                     for ebx in bundle.ebx:
-                        self.export_resource(ebx, ebx.filename)
+                        self.export_resource(ebx, os.path.join(self.path_ebx, ebx.filename))
 
                 if config.EXPORT_RESOURCES:
                     for resource in bundle.resources:
-                        self.export_resource(resource, resource.filename)
+                        self.export_resource(
+                            resource, os.path.join(self.path_resources, resource.filename)
+                        )
 
                 if config.EXPORT_CHUNKS:
                     for chunk in bundle.chunks:
-                        self.export_resource(chunk, os.path.join(bundle.name, chunk.filename))
+                        self.export_resource(chunk, os.path.join(self.path_chunks, chunk.filename))
 
             if config.EXPORT_TOC_RESOURCES:
                 for item in index.resources:
-                    self.export_resource(item, os.path.join('TocResources', name, item.filename))
+                    self.export_resource(item, os.path.join(self.path_toc_resources, item.filename))
 
     def export_resource(self, item: File, path: str) -> None:
         """
@@ -102,9 +110,10 @@ class Exporter:
         if item.offset is None or item.size is None:
             raise Exception("File {} is missing an offset or size".format(item))
 
-        # path = os.path.join(item.cas.package.path, item.filename)
-        path = os.path.join(config.OUTPUT_FOLDER, item.cas.package.layout.path, path)
-        if os.path.exists(path):
+        path = os.path.join(config.OUTPUT_FOLDER, path)
+
+        # Make sure we overwrite the file if it is part of the Patch layout
+        if item.cas.package.parent is None and os.path.exists(path):
             LOG.debug("Skipping existing file %s", path)
             return
 

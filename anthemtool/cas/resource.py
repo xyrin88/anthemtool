@@ -1,4 +1,5 @@
 import binascii
+from uuid import UUID
 from typing import Optional
 
 from anthemtool.cas.cas import Cas
@@ -11,7 +12,7 @@ class File:
     """
 
     def __init__(self,
-                 sha1: bytes,
+                 sha1: Optional[bytes] = None,
                  cas: Optional[Cas] = None,
                  name: Optional[str] = None,
                  flags: Optional[int] = None,
@@ -39,7 +40,7 @@ class File:
         return value.format(
             self.name,
             self.cas.path if self.cas else None,
-            binascii.hexlify(self.sha1).decode('utf-8'),
+            binascii.hexlify(self.sha1).decode('utf-8') if self.sha1 else '0',
             self.offset or 0x0,
             self.size or 0x0,
             self.orig_size or 0x0,
@@ -54,7 +55,10 @@ class File:
         if self.name:
             return self.name + ".bin"
 
-        return binascii.hexlify(self.sha1).decode('utf-8') + ".bin"
+        if self.sha1:
+            return binascii.hexlify(self.sha1).decode('utf-8') + ".bin"
+
+        raise Exception("Could not produce a unique filename for {}".format(self))
 
     def __repr__(self) -> str:
         return '{}({})'.format(self.__class__.__name__, self._format())
@@ -82,7 +86,7 @@ class Resource(File):
     """
 
     def __init__(self,
-                 sha1: bytes,
+                 sha1: Optional[bytes] = None,
                  cas: Optional[Cas] = None,
                  name: Optional[str] = None,
                  flags: Optional[int] = None,
@@ -136,17 +140,60 @@ class Resource(File):
         )
 
 
-class Chunk(File):
+class TocResource(File):
+    """
+    TocResource is a data file with an identifier and not tied to a bundle.
+    """
+
+    def __init__(self,
+                 uid,
+                 sha1: Optional[bytes] = None,
+                 cas: Optional[Cas] = None,
+                 name: Optional[str] = None,
+                 flags: Optional[int] = None,
+                 offset: Optional[int] = None,
+                 size: Optional[int] = None,
+                 orig_size: Optional[int] = None) -> None:
+        """
+        Initialize instance.
+        """
+        super().__init__(sha1, cas, name, flags, offset, size, orig_size)
+        self.uid = uid
+
+    @property
+    def guid(self) -> UUID:
+        """
+        Get the GUID for this instance.
+        """
+        return UUID(bytes_le=self.uid)
+
+    @property
+    def filename(self) -> str:
+        """
+        Get the filename that represents this instance.
+        """
+        return str(self.guid) + ".chunk"
+
+    def _format(self) -> str:
+        """
+        Create a human readable representation of this instance.
+        """
+        value = 'guid=0x{:s}, '
+
+        return value.format(str(self.guid)) + super()._format()
+
+
+class Chunk(TocResource):
     """
     Chunk is a data file with an identifier instead of a filename.
     """
 
     def __init__(self,
-                 sha1: bytes,
                  uid: bytes,
                  range_start: int,
                  logical_size: int,
                  logical_offset: int,
+                 sha1: Optional[bytes] = None,
                  cas: Optional[Cas] = None,
                  name: Optional[str] = None,
                  flags: Optional[int] = None,
@@ -157,8 +204,7 @@ class Chunk(File):
         """
         Initialize instance.
         """
-        super().__init__(sha1, cas, name, flags, offset, size)
-        self.uid = uid
+        super().__init__(uid, sha1, cas, name, flags, offset, size)
         self.range_start = range_start
         self.logical_size = logical_size
         self.logical_offset = logical_offset
@@ -179,29 +225,18 @@ class Chunk(File):
         """
         return
 
-    @property
-    def filename(self) -> str:
-        """
-        Get the filename that represents this instance.
-        """
-        result = binascii.hexlify(self.sha1).decode('utf-8')
-        if self.uid:
-            result += "_{}".format(binascii.hexlify(self.uid).decode('utf-8'))
-
-        return result + ".chunk"
-
     def _format(self) -> str:
         """
         Create a human readable representation of this instance.
         """
-        value = 'id=0x{:s}, range_start=0x{:x}, logical_size=0x{:x}, ' \
+        value = 'range_start=0x{:x}, logical_size=0x{:x}, ' \
                 'logical_offset=0x{:x}, h32=0x{:x}, first_mip=0x{:x}, '
 
         return value.format(
-            binascii.hexlify(self.uid).decode('utf-8') if self.uid else '0',
             self.range_start,
             self.logical_size,
             self.logical_offset,
             self.h32 or 0x0,
             self.first_mip or 0x0,
         ) + super()._format()
+

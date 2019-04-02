@@ -2,7 +2,7 @@ import logging
 from struct import unpack
 from typing import BinaryIO, List, TYPE_CHECKING
 
-from anthemtool.cas.resource import File
+from anthemtool.cas.resource import File, TocResource
 from anthemtool.sb.bundle import SBBundle
 from anthemtool.util import ReadUtil
 
@@ -91,8 +91,8 @@ class TocIndex:
 
         # Read bundle resources sha1 entries
         for idx in range(0, res_count):
-            # Is this a SHA sum or are the last 8 bytes something else?
-            res[idx]['sha1'] = handle.read(20)
+            res[idx]['uid'] = handle.read(16)
+            res[idx]['unknown'] = handle.read(4)
 
         if handle.tell() != offset4:
             raise Exception("Toc parsing failed, expected offset4")
@@ -115,9 +115,9 @@ class TocIndex:
                 raise Exception("Could not find CAS entry for CAS identifier 0x{:x}".format(cas_id))
 
             self.resources.append(
-                File(
+                TocResource(
+                    uid=res[idx]['uid'],
                     cas=cas,
-                    sha1=res[idx]['sha1'],
                     flags=res[idx]['flags'],
                     offset=offset,
                     size=size,
