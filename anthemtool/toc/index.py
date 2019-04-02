@@ -92,7 +92,10 @@ class TocIndex:
         # Read bundle resources sha1 entries
         for idx in range(0, res_count):
             res[idx]['uid'] = handle.read(16)
-            res[idx]['unknown'] = handle.read(4)
+            res[idx]['unknown'] = unpack(">H", handle.read(2))[0]
+            res[idx]['order'] = unpack(">H", handle.read(2))[0]
+
+        res = sorted(res, key=lambda x: x['order'])
 
         if handle.tell() != offset4:
             raise Exception("Toc parsing failed, expected offset4")
