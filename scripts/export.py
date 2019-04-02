@@ -55,8 +55,8 @@ class Exporter:
         game = self.load_game()
 
         LOG.info("Starting export of files to %s", config.OUTPUT_FOLDER)
-        self.export_layout(game.layout_data)
         self.export_layout(game.layout_patch)
+        self.export_layout(game.layout_data)
         LOG.info("Export completed successfully")
 
     def export_layout(self, layout: Layout) -> None:
@@ -111,9 +111,7 @@ class Exporter:
             raise Exception("File {} is missing an offset or size".format(item))
 
         path = os.path.join(config.OUTPUT_FOLDER, path)
-
-        # Make sure we overwrite the file if it is part of the Patch layout
-        if item.cas.package.parent is None and os.path.exists(path):
+        if os.path.exists(path):
             LOG.debug("Skipping existing file %s", path)
             return
 
