@@ -165,7 +165,7 @@ class TocResource(File):
         """
         Get the GUID for this instance.
         """
-        return UUID(bytes_le=self.uid)
+        return UUID(bytes_le=self.uid[::-1])
 
     @property
     def filename(self) -> str:
@@ -224,6 +224,10 @@ class Chunk(TocResource):
         Do not allow setting this attribute as it is calculated.
         """
         return
+
+    @property
+    def guid(self) -> UUID:
+        return UUID(bytes=self.uid)
 
     def _format(self) -> str:
         """
