@@ -37,13 +37,28 @@ python scripts/export.py
 Keep in mind that extraction can take a long time depending on the processing
 power available and how fast your disk is. We recommend exporting to an SSD
 as this will greatly reduce the total time required to complete the export.
-For us it took around 2,5 hours on a fairly recent pc. You will need around 
-140GB of free disk space to store approximately 650k files.
+For us it took around 30 minutes on a fairly recent pc. You will need around 
+75GB of free disk space to store approximately 290k files.
 
 During the export, warnings may appear indicating that some bundles are 
 unavailable. This is expected behavior as not all language bundles are 
 distributed along with the game files by default. You can safely ignore this 
 message.
+
+
+## Known Issues
+
+### Script crashes with a `FileNotFoundError`
+
+This is probably caused by export file paths exceeding the default Win32 path
+limit of 260 characters. You have two options:
+
+ 1. Prepend ` \\?\ ` to the `OUTPUT_FOLDER` in `scripts/config.py`.
+
+    Example: `OUTPUT_FOLDER = r"\\?\C:\AnthemExport"`
+    
+ 2. Enable Win32 Long Path support (via Group Policy Editor). 
+
 
 ## Troubleshooting
 When running into issues, logging can be configured in `scripts/config.py` to 
