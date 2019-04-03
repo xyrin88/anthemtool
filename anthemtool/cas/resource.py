@@ -120,7 +120,7 @@ class Resource(File):
         Get the filename that represents this instance.
         """
         name = self.name or binascii.hexlify(self.sha1).decode('utf-8')
-        ext = self.content_type or '.res'
+        ext = self.content_type or '.res_{:x}'.format(self.content_type_id or 0x0)
 
         return name + ext
 
