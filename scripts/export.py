@@ -45,7 +45,8 @@ class Exporter:
         # Export paths
         self.path_ebx = os.path.join('bundle', 'ebx')
         self.path_resources = os.path.join('bundle', 'res')
-        self.path_chunks = 'chunks'
+        self.path_chunks = os.path.join('bundle', 'chunks')
+        self.path_toc_resources = 'chunks'
 
     def export(self) -> None:
         """
@@ -97,7 +98,7 @@ class Exporter:
 
             if config.EXPORT_TOC_RESOURCES:
                 for item in index.resources:
-                    self.export_resource(item, os.path.join(self.path_chunks, item.filename))
+                    self.export_resource(item, os.path.join(self.path_toc_resources, item.filename))
 
     def export_resource(self, item: File, path: str) -> None:
         """
