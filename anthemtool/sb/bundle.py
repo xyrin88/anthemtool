@@ -168,7 +168,11 @@ class SBBundle:
 
         # Make sure we parsed until the end of the payload
         if bundle.tell() - offset != bundle_len:
-            raise Exception("Payload parsing error, check read_entry calls")
+            # Fix for an edge case that occurs once with the demo build
+            if bundle_len - (bundle.tell() - offset) == 8:
+                LOG.warning("Ignoring unexpected bytes: 0x%x", unpack(">Q", bundle.read(8))[0])
+            else:
+                raise Exception("Payload parsing error, check read_entry calls")
 
     def read_entry(self, cas_id: int, bundle: BinaryIO) -> Tuple[int, int]:
         """
