@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='anthemtool',
-    version='1.1',
+    version='1.2',
     description='Unpacker for the Frostbite Engine based Anthem Game.',
     author='xyrin88',
     author_email='xyrin88@gmail.com',
