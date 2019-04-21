@@ -20,7 +20,9 @@ class OodleDecompressor(Decompressor):
         try:
             self.handle = cdll.LoadLibrary(library_path)
         except OSError as e:
-            raise Exception("Could not load Oodle DLL, requires Windows to run.") from e
+            raise Exception(
+                "Could not load Oodle DLL, requires Windows and 64bit python to run."
+            ) from e
 
     def decompress(self, payload: bytes, size: int, output_size: int) -> bytes:
         """

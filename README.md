@@ -16,17 +16,24 @@ Oodle DLL (included with the game files) to perform file decompression.
 
 ## Quickstart
 
-*AnthemTool requires python 3.6+ to be installed.*
+*AnthemTool requires python 3.6+ x86_64 to be installed.*
 
-Install **anthemtool** from a terminal or PowerShell:
+Install **anthemtool** from a terminal or PowerShell using GIT:
 
 ```
 git clone https://github.com/xyrin88/anthemtool.git
 cd anthemtool
+```
+
+Alternatively, you can download this git repository as a ZIP file, extract it
+and open a terminal or PowerShell and navigate to the extracted folder.
+
+Install the anthemtool library:
+```
 python setup.py install
 ```
 
-Open up `scripts/config.py` and configure at least the `GAME_FOLDER` and 
+Now open up `scripts/config.py` and configure at least the `GAME_FOLDER` and 
 `OUTPUT_FOLDER`. 
 
 ##### *Export all files to the configured `OUTPUT_FOLDER`*
@@ -47,6 +54,13 @@ message.
 
 
 ## Known Issues
+
+### Script crashes with a `Could not load Oodle DLL` exception
+
+This is most likely caused by using a 32-bit version of python. The Oodle DLL
+that is loaded to perform the file decompression requires a 64bit process.
+
+To resolve this issue, install the 64bit version of python 3.
 
 ### Script crashes with a `FileNotFoundError`
 
