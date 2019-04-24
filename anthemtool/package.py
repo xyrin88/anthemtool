@@ -35,7 +35,7 @@ class Package:
         self.parent = parent
 
         # Local entries
-        self.cas_files: List[Cas] = []
+        self.cas_files: Dict[int, Cas] = {}
         self.superbundles: Dict[str, Optional[TocIndex]] = {}
         self.splitsuperbundles: Dict[str, Optional[TocIndex]] = {}
 
@@ -131,12 +131,12 @@ class Package:
             return None
 
         package = self.get_package(package_index, is_patch == 0x1)
-        if cas_index > len(package.cas_files):
+        if cas_index not in package.cas_files.keys():
             return None
 
-        return package.cas_files[cas_index - 1]
+        return package.cas_files[cas_index]
 
-    def get_cas_files(self, path: str) -> List[Cas]:
+    def get_cas_files(self, path: str) -> Dict[int, Cas]:
         """
         Discover the CAS files for the given path by traversing the directory structure.
         """
@@ -145,7 +145,8 @@ class Package:
             for f in os.listdir(path) if Cas.is_valid_cas_file(os.path.join(path, f))
         ]
 
-        return sorted(cas_files, key=lambda x: x.path)
+        # Extract cas index from path to use as key
+        return {int(cas.path[-6:-4]): cas for cas in cas_files}
 
     def __str__(self) -> str:
         return self.path
